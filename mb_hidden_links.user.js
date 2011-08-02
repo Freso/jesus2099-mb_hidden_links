@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-08-02_1833
+// @version        2011-08-03_1833
+// @history        2011-08-03_1833 quickly added bbc and allmusic + fix empty list title display
 // @version        2011-08-02_1833 forgot to re-paste some code in 1828
 // @history        2011-08-02_1828 loads hidden links from Relationships tab + more generated links
 // @history        2011-08-02_1400 fix URL encoding for non-Opera
@@ -22,8 +23,12 @@
 var artist_autolinks = {
 	"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
 	"Lastfm (name)": "http://last.fm/music/%artist-name%",
-	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
+	"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
 	"LyricWiki": "http://lyrics.wikia.com/%artist-name%",
+	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
+	/*"CDJournal search": "http://search.cdjournal.com/search/?k=%artist-name%", euc-jp impossible without ecl (22k) http://travel.han-be.com/ecl/Escape%20Codec%20Library%20ecl_js.htm
+	  "Joshinweb search": "http://joshinweb.jp/cdshops/Dps?KEY=ARTIST&FM=0&KEYWORD=%artist-name%", Shift_JIS :/ */
+	"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
 	"Google (strict)": "http://google.com/search?q=%2B%22%artist-name%%22",
 	"Google (normal)": "http://google.com/search?q=%artist-name%",
 };
@@ -53,21 +58,23 @@ if (sidebar) {
 						var target = res.evaluate("./mb:target", url, nsr, XPathResult.ANY_TYPE, null);
 						var turl = target.iterateNext();
 						if (turl) {
-							if (!haslinks) {
-								haslinks = true;
-								addExternalLink("Hidden links");
+							if (addExternalLink(url.getAttribute("type"), turl.textContent)) {
+								if (!haslinks) {
+									haslinks = true;
+									addExternalLink("Hidden links");
+								}
 							}
-							addExternalLink(url.getAttribute("type"), turl.textContent);
 						}
 					}
 					/*artist_autolinks*/
 					haslinks = false;
 					for (link in artist_autolinks) {
-						if (!haslinks) {
-							haslinks = true;
-							addExternalLink("Generated links");
+						if (addExternalLink(link, artist_autolinks[link].replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname)))) {
+							if (!haslinks) {
+								haslinks = true;
+								addExternalLink("Generated links");
+							}
 						}
-						addExternalLink(link, artist_autolinks[link].replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname)));
 					}
 					loading(false);
 				}
@@ -98,13 +105,15 @@ function addExternalLink(text, url) {
 			li.appendChild(a);
 			extlinks.appendChild(li);
 		}
+		else { return false; }
 	}
 	else {
 		var li = document.createElement("li");
 		li.style.fontWeight = "bold";
 		li.appendChild(document.createTextNode(text));
-		extlinks.appendChild(li);
+		extlinks.insertBefore(li, extlinks.lastChild);
 	}
+	return true;
 }
 
 function loading(on) {
