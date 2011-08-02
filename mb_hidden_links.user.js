@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name           mb: Display lastfm links
 // @description    Adds a link to artsit's last.fm page in musicbrainz sidebar
-// @version        2011-08-02_____
-// @history        2011-08-02_1246 first release
+// @version        2011-08-02_1246
+// @history        2011-08-02_1246 link to lastfm artists
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
-// @namespace      http://userscripts.org/users/jesus2099
+// @namespace      http://userscripts.org/scripts/show/108889
 
 // @include        http://*musicbrainz.org/artist/*
 
