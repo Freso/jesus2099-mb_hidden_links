@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-08-02_1828
+// @version        2011-08-02_1833
+// @version        2011-08-02_1833 forgot to re-paste some code in 1828
 // @history        2011-08-02_1828 loads hidden links from Relationships tab + more generated links
 // @history        2011-08-02_1400 fix URL encoding for non-Opera
 // @history        2011-08-02_1246 link to lastfm artists
@@ -46,10 +47,10 @@ if (sidebar) {
 			xhr.onreadystatechange = function(e) {
 				if (xhr.readyState == 4 && xhr.status == 200) {
 					var res = xhr.responseXML;
-					var urls = res.evaluate("//relation-list[@target-type='url']/relation", res, null, XPathResult.ANY_TYPE, null);
+					var urls = res.evaluate("//mb:relation-list[@target-type='url']/mb:relation", res, nsr, XPathResult.ANY_TYPE, null);
 					var haslinks = false;
 					while (url = urls.iterateNext()) {
-						var target = res.evaluate("./target", url, null, XPathResult.ANY_TYPE, null);
+						var target = res.evaluate("./mb:target", url, nsr, XPathResult.ANY_TYPE, null);
 						var turl = target.iterateNext();
 						if (turl) {
 							if (!haslinks) {
@@ -127,6 +128,15 @@ function loading(on) {
 		if (ldng) {
 			ldng.parentNode.removeChild(ldng);
 		}
+	}
+}
+
+function nsr(prefix) {
+	switch (prefix) {
+		case "mb":
+			return "http://musicbrainz.org/ns/mmd-2.0#";
+		default:
+			return null;
 	}
 }
 
