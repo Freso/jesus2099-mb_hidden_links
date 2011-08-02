@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name           mb: Display lastfm links
 // @description    Adds a link to artsit's last.fm page in musicbrainz sidebar
-// @version        2011-08-02_1246
+// @version        2011-08-02_1400
+// @history        2011-08-02_1400 fix URL encoding for non-Opera
 // @history        2011-08-02_1246 link to lastfm artists
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
@@ -23,7 +24,7 @@ if (sidebar) {
 	var artistname = document.getElementsByTagName("h1")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
 	var li = document.createElement("li");
 	var a = document.createElement("a");
-	a.setAttribute("href", lastfmartist.replace(/%a%/, artistname));
+	a.setAttribute("href", lastfmartist.replace(/%a%/, encodeURIComponent(artistname)));
 	a.appendChild(document.createTextNode("Last.fm"));
 	li.appendChild(a);
 	extlinks.appendChild(li);
