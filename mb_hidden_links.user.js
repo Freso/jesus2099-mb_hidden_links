@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-08-03_1833
+// @version        2011-08-05_1801
+// @history        2011-08-05_1801 show url dates (even on non-hidden)
 // @history        2011-08-03_1833 quickly added bbc and allmusic + fix empty list title display
 // @version        2011-08-02_1833 forgot to re-paste some code in 1828
 // @history        2011-08-02_1828 loads hidden links from Relationships tab + more generated links
@@ -57,8 +58,14 @@ if (sidebar) {
 					while (url = urls.iterateNext()) {
 						var target = res.evaluate("./mb:target", url, nsr, XPathResult.ANY_TYPE, null);
 						var turl = target.iterateNext();
+						var begin = res.evaluate("./mb:begin", url, nsr, XPathResult.ANY_TYPE, null);
+						begin = begin.iterateNext();
+						if (begin) { begin = begin.textContent; } else { begin = ""; }
+						var end = res.evaluate("./mb:end", url, nsr, XPathResult.ANY_TYPE, null);
+						end = end.iterateNext();
+						if (end) { end = end.textContent; } else { end = ""; }
 						if (turl) {
-							if (addExternalLink(url.getAttribute("type"), turl.textContent)) {
+							if (addExternalLink(url.getAttribute("type"), turl.textContent, begin, end)) {
 								if (!haslinks) {
 									haslinks = true;
 									addExternalLink("Hidden links");
@@ -85,7 +92,8 @@ if (sidebar) {
 	}/*artist*/
 }
 
-function addExternalLink(text, url) {
+function addExternalLink(text, url, begin, end) {
+	var newLink = true;
 	var lis = extlinks.getElementsByTagName("li");
 	if (!existingLinks) {
 		existingLinks = [];
@@ -95,9 +103,11 @@ function addExternalLink(text, url) {
 		}
 	}
 	if (url) {
-		if (existingLinks.indexOf(url.trim()) == -1) {
+		var li;
+		var exi = existingLinks.indexOf(url.trim());
+		if (exi == -1) {
 			existingLinks.push(url.trim());
-			var li = document.createElement("li");
+			li = document.createElement("li");
 			li.className = text;
 			var a = document.createElement("a");
 			a.setAttribute("href", url);
@@ -105,7 +115,18 @@ function addExternalLink(text, url) {
 			li.appendChild(a);
 			extlinks.appendChild(li);
 		}
-		else { return false; }
+		else {
+			newLink = false;
+			li = lis[exi];
+		}
+		if (begin || end) {
+			var dates = " (";
+			if (begin) { dates += begin; }
+			if (begin != end) { dates += "\u2014"; }
+			if (end && begin != end) { dates += end; }
+			dates += ")";
+			li.appendChild(document.createTextNode(dates));
+		}
 	}
 	else {
 		var li = document.createElement("li");
@@ -113,7 +134,7 @@ function addExternalLink(text, url) {
 		li.appendChild(document.createTextNode(text));
 		extlinks.insertBefore(li, extlinks.lastChild);
 	}
-	return true;
+	return newLink;
 }
 
 function loading(on) {
