@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-08-05_1801
+// @version        2011-08-08_0808
+// @history        2011-08-08_0808 any charset search post request enabled (joshinweb+cdjournal added)
 // @history        2011-08-05_1801 show url dates (even on non-hidden)
 // @history        2011-08-03_1833 quickly added bbc and allmusic + fix empty list title display
 // @version        2011-08-02_1833 forgot to re-paste some code in 1828
@@ -27,8 +28,8 @@ var artist_autolinks = {
 	"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
 	"LyricWiki": "http://lyrics.wikia.com/%artist-name%",
 	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
-	/*"CDJournal search": "http://search.cdjournal.com/search/?k=%artist-name%", euc-jp impossible without ecl (22k) http://travel.han-be.com/ecl/Escape%20Codec%20Library%20ecl_js.htm
-	  "Joshinweb search": "http://joshinweb.jp/cdshops/Dps?KEY=ARTIST&FM=0&KEYWORD=%artist-name%", Shift_JIS :/ */
+	"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
+	"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
 	"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
 	"Google (strict)": "http://google.com/search?q=%2B%22%artist-name%%22",
 	"Google (normal)": "http://google.com/search?q=%artist-name%",
@@ -76,7 +77,16 @@ if (sidebar) {
 					/*artist_autolinks*/
 					haslinks = false;
 					for (link in artist_autolinks) {
-						if (addExternalLink(link, artist_autolinks[link].replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname)))) {
+						var target = artist_autolinks[link];
+						if (typeof target == "string") {
+							target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
+						}
+						else {
+							for (param in target["parameters"]) {
+								target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
+							}
+						}
+						if (addExternalLink(link, target)) {
 							if (!haslinks) {
 								haslinks = true;
 								addExternalLink("Generated links");
@@ -92,7 +102,7 @@ if (sidebar) {
 	}/*artist*/
 }
 
-function addExternalLink(text, url, begin, end) {
+function addExternalLink(text, target, begin, end) {
 	var newLink = true;
 	var lis = extlinks.getElementsByTagName("li");
 	if (!existingLinks) {
@@ -102,30 +112,57 @@ function addExternalLink(text, url, begin, end) {
 			if (lisas.length>0) { existingLinks.push(lisas[0].getAttribute("href").trim()); }
 		}
 	}
-	if (url) {
+	if (target) {
 		var li;
-		var exi = existingLinks.indexOf(url.trim());
-		if (exi == -1) {
-			existingLinks.push(url.trim());
+		if (typeof target != "string") {
+			var form = document.createElement("form");
+			form.setAttribute("accept-charset", target["charset"]);
+			if (typeof opera == "undefined") {/*Opera already able to manage this*/
+				form.addEventListener("click", function (e) {
+					this.setAttribute("target", (e.shiftKey||e.ctrlKey)?"_blank":"_self");
+				}, false);
+			}
+			form.setAttribute("action", target["action"]);
+			for (param in target["parameters"]) {
+				var input = document.createElement("input");
+				input.setAttribute("type", "hidden");
+				input.setAttribute("name", param);
+				input.setAttribute("value", target["parameters"][param]);
+				form.appendChild(input);
+			}
+			input = document.createElement("input");
+			input.setAttribute("type", "submit");
+			input.setAttribute("value", text);
+			input.setAttribute("title", target["charset"]+" post request (shift/ctrl click for tabbing enabled)");
+			form.appendChild(input);
 			li = document.createElement("li");
-			li.className = text;
-			var a = document.createElement("a");
-			a.setAttribute("href", url);
-			a.appendChild(document.createTextNode(text));
-			li.appendChild(a);
+			li.appendChild(form);
 			extlinks.appendChild(li);
 		}
 		else {
-			newLink = false;
-			li = lis[exi];
-		}
-		if (begin || end) {
-			var dates = " (";
-			if (begin) { dates += begin; }
-			if (begin != end) { dates += "\u2014"; }
-			if (end && begin != end) { dates += end; }
-			dates += ")";
-			li.appendChild(document.createTextNode(dates));
+			var exi = existingLinks.indexOf(target.trim());
+			if (exi == -1) {
+				existingLinks.push(target.trim());
+				li = document.createElement("li");
+				li.className = text;
+				var a = document.createElement("a");
+				a.setAttribute("href", target);
+				a.appendChild(document.createTextNode(text));
+				li.appendChild(a);
+				extlinks.appendChild(li);
+			}
+			else {
+				newLink = false;
+				li = lis[exi];
+			}
+			if (begin || end) {
+				var dates = " (";
+				if (begin) { dates += begin; }
+				if (begin != end) { dates += "\u2014"; }
+				if (end && begin != end) { dates += end; }
+				dates += ")";
+				li.appendChild(document.createTextNode(dates));
+			}
 		}
 	}
 	else {
