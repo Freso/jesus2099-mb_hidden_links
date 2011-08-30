@@ -1,14 +1,7 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-08-08_0808
-// @history        2011-08-08_0808 any charset search post request enabled (joshinweb+cdjournal added)
-// @history        2011-08-05_1801 show url dates (even on non-hidden)
-// @history        2011-08-03_1833 quickly added bbc and allmusic + fix empty list title display
-// @version        2011-08-02_1833 forgot to re-paste some code in 1828
-// @history        2011-08-02_1828 loads hidden links from Relationships tab + more generated links
-// @history        2011-08-02_1400 fix URL encoding for non-Opera
-// @history        2011-08-02_1246 link to lastfm artists
+// @version        2011-08-30_1801
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -30,7 +23,13 @@ var artist_autolinks = {
 	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
 	"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
 	"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
+	"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
+	"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
+	"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
 	"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
+	"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
+	"en.Wikipedia": "http://en.wikipedia.org/w/index.php?search=%artist-name%",
+	"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
 	"Google (strict)": "http://google.com/search?q=%2B%22%artist-name%%22",
 	"Google (normal)": "http://google.com/search?q=%artist-name%",
 };
