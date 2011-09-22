@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-09-22_1743
+// @version        2011-09-22_1845
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -32,6 +32,27 @@ var artist_autolinks = {
 	"Google": "http://www.google.com/search?q=%artist-name%",
 	"Google (images)": "http://images.google.com/images?q=%artist-name%",
 	"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
+};
+var favicons = {
+	"allmusic.com": "http://allmusic.com/img/favicon.ico",
+	"ameblo.jp": "http://ameblo.jp/favicon.ico",
+	"bbc.co.uk": "http://www.bbc.co.uk/favicon.ico",
+	"discogs.com": "http://musicbrainz.org/static/images/favicons/discogs-16.png",
+	"exblog.jp": "http://exblog.jp/favicon.ico",
+	"google.": "http://www.google.com/favicon.ico",
+	"joshinweb.jp": "http://joshinweb.jp/favicon.ico",
+	"last.fm": "http://musicbrainz.org/static/images/favicons/lastfm-16.png",
+	"lastfm.": "http://musicbrainz.org/static/images/favicons/lastfm-16.png",
+	"lyrics.wikia.com": "http://lyrics.wikia.com/favicon.ico",
+	"metal-archives.com": "http://www.metal-archives.com/favicon.ico",
+	"musicbrainz.org": "http://musicbrainz.org/favicon.ico",
+	"rakuten.co.jp": "http://plaza.rakuten.co.jp/favicon.ico",
+	"secondhandsongs.com": "http://www.secondhandsongs.com/art/icons/shs.png",
+	"soundcloud.com": "http://musicbrainz.org/static/images/favicons/soundcloud-16.png",
+	"vgmdb.net": "http://vgmdb.net/favicon.ico",
+	"vkdb.jp": "http://www.vkdb.jp/favicon.ico",
+	"wikipedia.org": "http://en.wikipedia.org/favicon.ico",
+	"yahoo.": "http://blogs.yahoo.co.jp/favicon.ico",
 };
 /*------------end of settings*/
 
@@ -165,6 +186,13 @@ function addExternalLink(text, target, begin, end) {
 				if (end && begin != end) { dates += end; }
 				dates += ")";
 				li.appendChild(document.createTextNode(dates));
+			}
+		}
+		var favurltest = (typeof target == "string")?target:target["action"];
+		for (part in favicons) {
+			if (favurltest.indexOf(part) != -1) {
+				li.style.backgroundImage = "url(\""+favicons[part]+"\")";
+				break;
 			}
 		}
 	}
