@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-09-22_1734
+// @version        2011-09-22_1743
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -130,7 +130,7 @@ function addExternalLink(text, target, begin, end) {
 			a.setAttribute("title", target["charset"]+" post request (shift/ctrl click for tabbing enabled)");
 			a.addEventListener("click", function (e) {
 				if (typeof opera == "undefined") {/*Opera already ok*/
-					this.setAttribute("target", (e.shiftKey||e.ctrlKey)?"_blank":"_self");
+					this.parentNode.setAttribute("target", (e.shiftKey||e.ctrlKey)?"_blank":"_self");
 				}
 				this.parentNode.submit();
 			}, false);
