@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-08-30_1801
+// @version        2011-09-22_1734
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -9,12 +9,11 @@
 
 // @include        http://*musicbrainz.org/artist/*
 // @exclude        http://*musicbrainz.org/artist/*/edit
+// @exclude        http://*musicbrainz.org/artist/*/split
 // ==/UserScript==
 
 (function () {
-/*todo:releases(-groups), recordings and works*/
-
-/*settings*/
+/*------------settings*/
 var artist_autolinks = {
 	"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
 	"Lastfm (name)": "http://last.fm/music/%artist-name%",
@@ -30,10 +29,11 @@ var artist_autolinks = {
 	"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
 	"en.Wikipedia": "http://en.wikipedia.org/w/index.php?search=%artist-name%",
 	"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
-	"Google (strict)": "http://google.com/search?q=%2B%22%artist-name%%22",
-	"Google (normal)": "http://google.com/search?q=%artist-name%",
+	"Google": "http://www.google.com/search?q=%artist-name%",
+	"Google (images)": "http://images.google.com/images?q=%artist-name%",
+	"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
 };
-/*end of settings*/
+/*------------end of settings*/
 
 var sidebar = document.getElementById("sidebar");
 var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
@@ -116,11 +116,6 @@ function addExternalLink(text, target, begin, end) {
 		if (typeof target != "string") {
 			var form = document.createElement("form");
 			form.setAttribute("accept-charset", target["charset"]);
-			if (typeof opera == "undefined") {/*Opera already able to manage this*/
-				form.addEventListener("click", function (e) {
-					this.setAttribute("target", (e.shiftKey||e.ctrlKey)?"_blank":"_self");
-				}, false);
-			}
 			form.setAttribute("action", target["action"]);
 			for (param in target["parameters"]) {
 				var input = document.createElement("input");
@@ -129,11 +124,20 @@ function addExternalLink(text, target, begin, end) {
 				input.setAttribute("value", target["parameters"][param]);
 				form.appendChild(input);
 			}
-			input = document.createElement("input");
-			input.setAttribute("type", "submit");
-			input.setAttribute("value", text);
-			input.setAttribute("title", target["charset"]+" post request (shift/ctrl click for tabbing enabled)");
-			form.appendChild(input);
+			var a = document.createElement("a");
+			a.style.cursor = "pointer";
+			a.appendChild(document.createTextNode(text));
+			a.setAttribute("title", target["charset"]+" post request (shift/ctrl click for tabbing enabled)");
+			a.addEventListener("click", function (e) {
+				if (typeof opera == "undefined") {/*Opera already ok*/
+					this.setAttribute("target", (e.shiftKey||e.ctrlKey)?"_blank":"_self");
+				}
+				this.parentNode.submit();
+			}, false);
+			form.appendChild(a);
+			form.appendChild(document.createTextNode(" ("));
+			form.appendChild(document.createElement("code")).appendChild(document.createTextNode(target["charset"]));
+			form.appendChild(document.createTextNode(")"));
 			li = document.createElement("li");
 			li.appendChild(form);
 			extlinks.appendChild(li);
@@ -167,6 +171,7 @@ function addExternalLink(text, target, begin, end) {
 	else {
 		var li = document.createElement("li");
 		li.style.fontWeight = "bold";
+		li.style.background = "transparent";
 		li.appendChild(document.createTextNode(text));
 		extlinks.insertBefore(li, extlinks.lastChild);
 	}
