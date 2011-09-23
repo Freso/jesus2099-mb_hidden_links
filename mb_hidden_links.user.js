@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2011-09-23_1851
+// @version        2011-09-23_2140
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -208,7 +208,9 @@ function addExternalLink(text, target, begin, end) {
 		}, false);*/
 		favicontry[ifit].addEventListener("load", function (e) {
 			clearTimeout(this.to);
-			this.li.style.backgroundImage = "url("+this.src+")";
+			if (this.width == 16) {
+				this.li.style.backgroundImage = "url("+this.src+")";
+			}
 		}, false);
 		favicontry[ifit].li = li;
 		favicontry[ifit].src = favurlfound;
