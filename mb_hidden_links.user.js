@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-09-22_1845
+// @version        2011-09-23_1214
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -43,6 +43,7 @@ var favicons = {
 	"joshinweb.jp": "http://joshinweb.jp/favicon.ico",
 	"last.fm": "http://musicbrainz.org/static/images/favicons/lastfm-16.png",
 	"lastfm.": "http://musicbrainz.org/static/images/favicons/lastfm-16.png",
+	"livedoor.jp": "http://blog.livedoor.jp/favicon.ico",
 	"lyrics.wikia.com": "http://lyrics.wikia.com/favicon.ico",
 	"metal-archives.com": "http://www.metal-archives.com/favicon.ico",
 	"musicbrainz.org": "http://musicbrainz.org/favicon.ico",
@@ -54,6 +55,7 @@ var favicons = {
 	"wikipedia.org": "http://en.wikipedia.org/favicon.ico",
 	"yahoo.": "http://blogs.yahoo.co.jp/favicon.ico",
 };
+var guessOtherFavicons = true;
 /*------------end of settings*/
 
 var sidebar = document.getElementById("sidebar");
@@ -189,11 +191,23 @@ function addExternalLink(text, target, begin, end) {
 			}
 		}
 		var favurltest = (typeof target == "string")?target:target["action"];
+		var favurlfound = false;
 		for (part in favicons) {
 			if (favurltest.indexOf(part) != -1) {
 				li.style.backgroundImage = "url(\""+favicons[part]+"\")";
+				favurlfound = true;
 				break;
 			}
+		}
+		if (guessOtherFavicons && !favurlfound) {
+			var favicontry = new Image();
+			/*favicontry.addEventListener("error", function (e) {
+			}, false);*/
+			favicontry.addEventListener("load", function (e) {
+				this.li.style.backgroundImage = "url("+this.src+")";
+			}, false);
+			favicontry.li = li;
+			favicontry.src = favurltest.substr(0, favurltest.indexOf("/", 7))+"/favicon.ico";
 		}
 	}
 	else {
