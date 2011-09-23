@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
-// @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-09-23_1645
+// @name           mb: Artist all links (+dates +favicons +search)
+// @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
+// @version        2011-09-23_1851
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -212,7 +212,7 @@ function addExternalLink(text, target, begin, end) {
 		}, false);
 		favicontry[ifit].li = li;
 		favicontry[ifit].src = favurlfound;
-		favicontry[ifit].to = setTimeout(function(){ favicontry[ifit].src= "http://musicbrainz.org/static/images/favicons/external-16.png"; }, 5000);
+		favicontry[ifit].to = setTimeout(function(){ favicontry[ifit].src = "/"; }, 5000);
 	}
 	else {
 		var li = document.createElement("li");
