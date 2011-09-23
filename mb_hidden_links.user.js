@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Display hidden and generated links in sidebar (lastfm, searches, etc.)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc.
-// @version        2011-09-23_1214
+// @version        2011-09-23_1645
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -124,6 +124,7 @@ if (sidebar) {
 	}/*artist*/
 }
 
+var favicontry = [];
 function addExternalLink(text, target, begin, end) {
 	var newLink = true;
 	var lis = extlinks.getElementsByTagName("li");
@@ -194,21 +195,24 @@ function addExternalLink(text, target, begin, end) {
 		var favurlfound = false;
 		for (part in favicons) {
 			if (favurltest.indexOf(part) != -1) {
-				li.style.backgroundImage = "url(\""+favicons[part]+"\")";
-				favurlfound = true;
+				favurlfound = favicons[part];
 				break;
 			}
 		}
 		if (guessOtherFavicons && !favurlfound) {
-			var favicontry = new Image();
-			/*favicontry.addEventListener("error", function (e) {
-			}, false);*/
-			favicontry.addEventListener("load", function (e) {
-				this.li.style.backgroundImage = "url("+this.src+")";
-			}, false);
-			favicontry.li = li;
-			favicontry.src = favurltest.substr(0, favurltest.indexOf("/", 7))+"/favicon.ico";
+			favurlfound = favurltest.substr(0, favurltest.indexOf("/", 7))+"/favicon.ico";
 		}
+		var ifit = favicontry.length;
+		favicontry[ifit] = new Image();
+		/*favicontry.addEventListener("error", function (e) {
+		}, false);*/
+		favicontry[ifit].addEventListener("load", function (e) {
+			clearTimeout(this.to);
+			this.li.style.backgroundImage = "url("+this.src+")";
+		}, false);
+		favicontry[ifit].li = li;
+		favicontry[ifit].src = favurlfound;
+		favicontry[ifit].to = setTimeout(function(){ favicontry[ifit].src= "http://musicbrainz.org/static/images/favicons/external-16.png"; }, 5000);
 	}
 	else {
 		var li = document.createElement("li");
