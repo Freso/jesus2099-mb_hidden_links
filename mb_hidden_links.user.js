@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2011-09-23_2140
+// @version        2011-11-18_1528
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -10,6 +10,7 @@
 // @include        http://*musicbrainz.org/artist/*
 // @exclude        http://*musicbrainz.org/artist/*/edit
 // @exclude        http://*musicbrainz.org/artist/*/split
+// @include        http://*musicbrainz.org/release/*
 // ==/UserScript==
 
 (function () {
@@ -56,13 +57,18 @@ var favicons = {
 	"yahoo.": "http://blogs.yahoo.co.jp/favicon.ico",
 };
 var guessOtherFavicons = true;
-/*------------end of settings*/
+/*------------end of settings (don't edit below) */
+var hideAffs = false;
 
 var sidebar = document.getElementById("sidebar");
 var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
 var existingLinks;
 
 if (sidebar) {
+	var rgextrels = document.getElementsByClassName("external_links_2");
+	if (rgextrels && rgextrels.length > 0 && rgextrels[0].previousSibling.tagName == "UL") {
+		rgextrels[0].parentNode.insertBefore(document.createElement("h2"), rgextrels[0]).appendChild(document.createTextNode("Release group external links"));
+	}
 	var artistid = self.location.href.match(/musicbrainz.org\/artist\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*/i);
 	if (artistid) {
 		artistid = artistid[1];
@@ -122,6 +128,12 @@ if (sidebar) {
 			xhr.send(null);
 		}
 	}/*artist*/
+	if (hideAffs) {
+		var affs = document.getElementById("sidebar-affiliates");
+		if (affs) {
+			affs.parentNode.removeChild(affs);
+		}
+	}
 }
 
 var favicontry = [];
@@ -220,6 +232,7 @@ function addExternalLink(text, target, begin, end) {
 		var li = document.createElement("li");
 		li.style.fontWeight = "bold";
 		li.style.background = "transparent";
+		li.style.marginTop = ".5em";
 		li.appendChild(document.createTextNode(text));
 		extlinks.insertBefore(li, extlinks.lastChild);
 	}
