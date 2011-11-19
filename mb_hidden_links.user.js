@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2011-11-18_1528
+// @version        2011-11-19_0104
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -66,7 +66,7 @@ var existingLinks;
 
 if (sidebar) {
 	var rgextrels = document.getElementsByClassName("external_links_2");
-	if (rgextrels && rgextrels.length > 0 && rgextrels[0].previousSibling.tagName == "UL") {
+	if (rgextrels && rgextrels.length > 0 && rgextrels[0].getElementsByTagName("li").length > 0 && rgextrels[0].previousSibling.tagName == "UL") {
 		rgextrels[0].parentNode.insertBefore(document.createElement("h2"), rgextrels[0]).appendChild(document.createTextNode("Release group external links"));
 	}
 	var artistid = self.location.href.match(/musicbrainz.org\/artist\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*/i);
