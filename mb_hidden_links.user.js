@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2011-11-19_0104
+// @version        2011-11-29_1141
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -58,80 +58,88 @@ var favicons = {
 };
 var guessOtherFavicons = true;
 /*------------end of settings (don't edit below) */
-var hideAffs = false;
+var hideAffiliates = false;
 
 var sidebar = document.getElementById("sidebar");
 var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
-var existingLinks;
+var existingLinks, extlinks;
 
-if (sidebar) {
-	var rgextrels = document.getElementsByClassName("external_links_2");
-	if (rgextrels && rgextrels.length > 0 && rgextrels[0].getElementsByTagName("li").length > 0 && rgextrels[0].previousSibling.tagName == "UL") {
-		rgextrels[0].parentNode.insertBefore(document.createElement("h2"), rgextrels[0]).appendChild(document.createTextNode("Release group external links"));
-	}
-	var artistid = self.location.href.match(/musicbrainz.org\/artist\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*/i);
-	if (artistid) {
-		artistid = artistid[1];
-		var artistname = document.getElementsByTagName("h1")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
-		var extlinks = sidebar.getElementsByClassName("external_links");
-		if (extlinks && extlinks.length>0) {
-			extlinks = extlinks[0];
-			loading(true);
-			/*attached missing links*/
-			var xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function(e) {
-				if (xhr.readyState == 4 && xhr.status == 200) {
-					var res = xhr.responseXML;
-					var urls = res.evaluate("//mb:relation-list[@target-type='url']/mb:relation", res, nsr, XPathResult.ANY_TYPE, null);
-					var haslinks = false;
-					while (url = urls.iterateNext()) {
-						var target = res.evaluate("./mb:target", url, nsr, XPathResult.ANY_TYPE, null);
-						var turl = target.iterateNext();
-						var begin = res.evaluate("./mb:begin", url, nsr, XPathResult.ANY_TYPE, null);
-						begin = begin.iterateNext();
-						if (begin) { begin = begin.textContent; } else { begin = ""; }
-						var end = res.evaluate("./mb:end", url, nsr, XPathResult.ANY_TYPE, null);
-						end = end.iterateNext();
-						if (end) { end = end.textContent; } else { end = ""; }
-						if (turl) {
-							if (addExternalLink(url.getAttribute("type"), turl.textContent, begin, end)) {
-								if (!haslinks) {
-									haslinks = true;
-									addExternalLink("Hidden links");
+function do108889() {
+	if (sidebar) {
+		var rgextrels = document.getElementsByClassName("external_links_2");
+		if (rgextrels && rgextrels.length > 0 && rgextrels[0].getElementsByTagName("li").length > 0 && rgextrels[0].previousSibling.tagName == "UL") {
+			rgextrels[0].parentNode.insertBefore(document.createElement("h2"), rgextrels[0]).appendChild(document.createTextNode("Release group external links"));
+		}
+		var artistid = self.location.href.match(/musicbrainz.org\/artist\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*/i);
+		if (artistid) {
+			artistid = artistid[1];
+			var artistname = document.getElementsByTagName("h1")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
+			extlinks = sidebar.getElementsByClassName("external_links");
+			if (extlinks && extlinks.length>0) {
+				extlinks = extlinks[0];
+				loading(true);
+				/*attached missing links*/
+				var xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function(e) {
+					if (xhr.readyState == 4) {
+						if (xhr.status == 200) {
+							var res = xhr.responseXML;
+							var urls = res.evaluate("//mb:relation-list[@target-type='url']/mb:relation", res, nsr, XPathResult.ANY_TYPE, null);
+							var haslinks = false;
+							while (url = urls.iterateNext()) {
+								var target = res.evaluate("./mb:target", url, nsr, XPathResult.ANY_TYPE, null);
+								var turl = target.iterateNext();
+								var begin = res.evaluate("./mb:begin", url, nsr, XPathResult.ANY_TYPE, null);
+								begin = begin.iterateNext();
+								if (begin) { begin = begin.textContent; } else { begin = ""; }
+								var end = res.evaluate("./mb:end", url, nsr, XPathResult.ANY_TYPE, null);
+								end = end.iterateNext();
+								if (end) { end = end.textContent; } else { end = ""; }
+								if (turl) {
+									if (addExternalLink(url.getAttribute("type"), turl.textContent, begin, end)) {
+										if (!haslinks) {
+											haslinks = true;
+											addExternalLink("Hidden links");
+										}
+									}
 								}
 							}
+							/*artist_autolinks*/
+							haslinks = false;
+							for (link in artist_autolinks) {
+								var target = artist_autolinks[link];
+								if (typeof target == "string") {
+									target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
+								}
+								else {
+									for (param in target["parameters"]) {
+										target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
+									}
+								}
+								if (addExternalLink(link, target)) {
+									if (!haslinks) {
+										haslinks = true;
+										addExternalLink("Generated links");
+									}
+								}
+							}
+							loading(false);
+						} else if (xhr.status >= 400) {
+							var txt = xhr.responseText.match(/\<error\>\<text\>(.+)\<\/text\>\<text\>/);
+							txt = txt?txt[1]:"";
+							error(xhr.status, txt);
 						}
 					}
-					/*artist_autolinks*/
-					haslinks = false;
-					for (link in artist_autolinks) {
-						var target = artist_autolinks[link];
-						if (typeof target == "string") {
-							target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
-						}
-						else {
-							for (param in target["parameters"]) {
-								target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
-							}
-						}
-						if (addExternalLink(link, target)) {
-							if (!haslinks) {
-								haslinks = true;
-								addExternalLink("Generated links");
-							}
-						}
-					}
-					loading(false);
-				}
-			};
-			xhr.open("GET", arelsws.replace(/%artist-id%/, artistid), true);
-			xhr.send(null);
-		}
-	}/*artist*/
-	if (hideAffs) {
-		var affs = document.getElementById("sidebar-affiliates");
-		if (affs) {
-			affs.parentNode.removeChild(affs);
+				};
+				xhr.open("GET", arelsws.replace(/%artist-id%/, artistid), true);
+				xhr.send(null);
+			}
+		}/*artist*/
+		if (hideAffiliates) {
+			var affs = document.getElementById("sidebar-affiliates");
+			if (affs) {
+				affs.parentNode.removeChild(affs);
+			}
 		}
 	}
 }
@@ -160,9 +168,7 @@ function addExternalLink(text, target, begin, end) {
 				input.setAttribute("value", target["parameters"][param]);
 				form.appendChild(input);
 			}
-			var a = document.createElement("a");
-			a.style.cursor = "pointer";
-			a.appendChild(document.createTextNode(text));
+			var a = createA(text);
 			a.setAttribute("title", target["charset"]+" post request (shift/ctrl click for tabbing enabled)");
 			a.addEventListener("click", function (e) {
 				if (typeof opera == "undefined") {/*Opera already ok*/
@@ -184,10 +190,7 @@ function addExternalLink(text, target, begin, end) {
 				existingLinks.push(target.trim());
 				li = document.createElement("li");
 				li.className = text;
-				var a = document.createElement("a");
-				a.setAttribute("href", target);
-				a.appendChild(document.createTextNode(text));
-				li.appendChild(a);
+				li.appendChild(createA(text, target));
 				extlinks.appendChild(li);
 			}
 			else {
@@ -239,6 +242,31 @@ function addExternalLink(text, target, begin, end) {
 	return newLink;
 }
 
+function error(code, text) {
+	var ldng = document.getElementById("jesus2099loading108889");
+	if (ldng) {
+		ldng.setAttribute("id", "jesus2099error108889");
+		ldng.style.background = "pink";
+		ldng.replaceChild(document.createTextNode("Error "+code+" in "), ldng.firstChild);
+		ldng.appendChild(createA("all links", "http://userscripts.org/scripts/show/108889"));
+		ldng.appendChild(document.createTextNode(" ("));
+		var retrybtn = createA("retry");
+		retrybtn.addEventListener("click", function (e) {
+			var err = document.getElementById("jesus2099error108889");
+			if (err) { err.parentNode.removeChild(err); }
+			do108889();
+		}, false);
+		ldng.appendChild(retrybtn);
+		ldng.appendChild(document.createTextNode(")"));
+		ldng.appendChild(document.createElement("br"));
+		ldng.appendChild(document.createElement("i").appendChild(document.createTextNode(text)));
+	}
+	/*else {
+		loading(on);
+		error(code, text);
+	}*/
+}
+
 function loading(on) {
 	var ldng = document.getElementById("jesus2099loading108889");
 	if (on) {
@@ -263,6 +291,18 @@ function loading(on) {
 	}
 }
 
+function createA(text, link) {
+	var a = document.createElement("a");
+	if (link) {
+		a.setAttribute("href", link);
+	}
+	else {
+		a.style.cursor = "pointer";
+	}
+	a.appendChild(document.createTextNode(text));
+	return(a);
+}
+
 function nsr(prefix) {
 	switch (prefix) {
 		case "mb":
@@ -271,5 +311,7 @@ function nsr(prefix) {
 			return null;
 	}
 }
+
+do108889();
 
 })();
