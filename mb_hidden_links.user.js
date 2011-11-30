@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           mb: Artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2011-11-29_1141
+// @version        2011-11-30_1156
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -15,6 +15,7 @@
 
 (function () {
 /*------------settings*/
+var autolinksOpacity = ".5"; /*can be dimmer than existing links*/
 var artist_autolinks = {
 	"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
 	"Lastfm (name)": "http://last.fm/music/%artist-name%",
@@ -73,6 +74,7 @@ function do108889() {
 		var artistid = self.location.href.match(/musicbrainz.org\/artist\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*/i);
 		if (artistid) {
 			artistid = artistid[1];
+			arelsws = arelsws.replace(/%artist-id%/, artistid);
 			var artistname = document.getElementsByTagName("h1")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
 			extlinks = sidebar.getElementsByClassName("external_links");
 			if (extlinks && extlinks.length>0) {
@@ -105,6 +107,7 @@ function do108889() {
 								}
 							}
 							/*artist_autolinks*/
+							extlinksOpacity = autolinksOpacity;
 							haslinks = false;
 							for (link in artist_autolinks) {
 								var target = artist_autolinks[link];
@@ -131,7 +134,7 @@ function do108889() {
 						}
 					}
 				};
-				xhr.open("GET", arelsws.replace(/%artist-id%/, artistid), true);
+				xhr.open("GET", arelsws, true);
 				xhr.send(null);
 			}
 		}/*artist*/
@@ -145,6 +148,7 @@ function do108889() {
 }
 
 var favicontry = [];
+var extlinksOpacity = "1";
 function addExternalLink(text, target, begin, end) {
 	var newLink = true;
 	var lis = extlinks.getElementsByTagName("li");
@@ -182,7 +186,6 @@ function addExternalLink(text, target, begin, end) {
 			form.appendChild(document.createTextNode(")"));
 			li = document.createElement("li");
 			li.appendChild(form);
-			extlinks.appendChild(li);
 		}
 		else {
 			var exi = existingLinks.indexOf(target.trim());
@@ -191,7 +194,6 @@ function addExternalLink(text, target, begin, end) {
 				li = document.createElement("li");
 				li.className = text;
 				li.appendChild(createA(text, target));
-				extlinks.appendChild(li);
 			}
 			else {
 				newLink = false;
@@ -239,6 +241,10 @@ function addExternalLink(text, target, begin, end) {
 		li.appendChild(document.createTextNode(text));
 		extlinks.insertBefore(li, extlinks.lastChild);
 	}
+	if (newLink) {
+		li.style.opacity = extlinksOpacity;
+		if (target) { extlinks.appendChild(li); }
+	}
 	return newLink;
 }
 
@@ -247,7 +253,9 @@ function error(code, text) {
 	if (ldng) {
 		ldng.setAttribute("id", "jesus2099error108889");
 		ldng.style.background = "pink";
-		ldng.replaceChild(document.createTextNode("Error "+code+" in "), ldng.firstChild);
+		ldng.replaceChild(document.createTextNode("Error "+code), ldng.firstChild);
+		ldng.appendChild(createA("*", arelsws));
+		ldng.appendChild(document.createTextNode(" in "));
 		ldng.appendChild(createA("all links", "http://userscripts.org/scripts/show/108889"));
 		ldng.appendChild(document.createTextNode(" ("));
 		var retrybtn = createA("retry");
@@ -261,10 +269,10 @@ function error(code, text) {
 		ldng.appendChild(document.createElement("br"));
 		ldng.appendChild(document.createElement("i").appendChild(document.createTextNode(text)));
 	}
-	/*else {
+	else {
 		loading(on);
 		error(code, text);
-	}*/
+	}
 }
 
 function loading(on) {
