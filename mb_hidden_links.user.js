@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           mb: Artist all links (+dates +favicons +search)
+// @name           MB. artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2011-11-30_1156
+// @version        2012-01-18_1010
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -15,6 +15,7 @@
 
 (function () {
 /*------------settings*/
+var sortnameSearchFor = new RegExp("[\u0384-\u1CF2\u1F00-\uFFFF]");/*U+2FA1D is currently out of js range*/
 var autolinksOpacity = ".5"; /*can be dimmer than existing links*/
 var artist_autolinks = {
 	"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
@@ -75,7 +76,13 @@ function do108889() {
 		if (artistid) {
 			artistid = artistid[1];
 			arelsws = arelsws.replace(/%artist-id%/, artistid);
-			var artistname = document.getElementsByTagName("h1")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
+			var artistname = document.getElementsByClassName("artistheader")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
+			var tmpsn = document.getElementsByClassName("artistheader")[0].getElementsByTagName("a")[0].getAttribute("title").split(",");
+			var artistsortname = "";
+			for (var isn=tmpsn.length-1; isn>=0; isn--) {
+				artistsortname += tmpsn[isn].trim();
+				if (isn != 0) {artistsortname += " "; }
+			}
 			extlinks = sidebar.getElementsByClassName("external_links");
 			if (extlinks && extlinks.length>0) {
 				extlinks = extlinks[0];
@@ -85,6 +92,7 @@ function do108889() {
 				xhr.onreadystatechange = function(e) {
 					if (xhr.readyState == 4) {
 						if (xhr.status == 200) {
+							loading(false);
 							var res = xhr.responseXML;
 							var urls = res.evaluate("//mb:relation-list[@target-type='url']/mb:relation", res, nsr, XPathResult.ANY_TYPE, null);
 							var haslinks = false;
@@ -111,7 +119,11 @@ function do108889() {
 							haslinks = false;
 							for (link in artist_autolinks) {
 								var target = artist_autolinks[link];
+								var sntarget;
 								if (typeof target == "string") {
+									if (artistname != artistsortname && artistname.match(sortnameSearchFor)) {
+										sntarget = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistsortname));
+									}
 									target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
 								}
 								else {
@@ -119,14 +131,13 @@ function do108889() {
 										target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
 									}
 								}
-								if (addExternalLink(link, target)) {
+								if (addExternalLink(link, target, null, null, sntarget)) {
 									if (!haslinks) {
 										haslinks = true;
 										addExternalLink("Generated links");
 									}
 								}
 							}
-							loading(false);
 						} else if (xhr.status >= 400) {
 							var txt = xhr.responseText.match(/\<error\>\<text\>(.+)\<\/text\>\<text\>/);
 							txt = txt?txt[1]:"";
@@ -149,7 +160,7 @@ function do108889() {
 
 var favicontry = [];
 var extlinksOpacity = "1";
-function addExternalLink(text, target, begin, end) {
+function addExternalLink(text, target, begin, end, sntarget) {
 	var newLink = true;
 	var lis = extlinks.getElementsByTagName("li");
 	if (!existingLinks) {
@@ -198,6 +209,11 @@ function addExternalLink(text, target, begin, end) {
 			else {
 				newLink = false;
 				li = lis[exi];
+			}
+			if (sntarget) {
+				li.appendChild(document.createTextNode(" ("));
+				li.appendChild(createA("sn", sntarget, "search with sortname"));
+				li.appendChild(document.createTextNode(")"));
 			}
 			if (begin || end) {
 				var dates = " (";
@@ -270,7 +286,7 @@ function error(code, text) {
 		ldng.appendChild(document.createElement("i").appendChild(document.createTextNode(text)));
 	}
 	else {
-		loading(on);
+		loading(true);
 		error(code, text);
 	}
 }
@@ -299,7 +315,7 @@ function loading(on) {
 	}
 }
 
-function createA(text, link) {
+function createA(text, link, title) {
 	var a = document.createElement("a");
 	if (link) {
 		a.setAttribute("href", link);
@@ -307,8 +323,9 @@ function createA(text, link) {
 	else {
 		a.style.cursor = "pointer";
 	}
+	if (title){ a.setAttribute("title", title); }
 	a.appendChild(document.createTextNode(text));
-	return(a);
+	return a;
 }
 
 function nsr(prefix) {
