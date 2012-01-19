@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2012-01-18_1010
+// @version        2012-01-19_2218
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -25,13 +25,13 @@ var artist_autolinks = {
 	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
 	"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
 	"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
+	"\u6B4C\u8A5E\u30BF\u30A4\u30E0": {"charset":"EUC-JP", "action":"http://www.kasi-time.com/search.php", "parameters":{"cat_index":"uta","keyword":"%artist-name%"}},
 	"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
 	"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
 	"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
 	"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
 	"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
-	"en.Wikipedia": "http://en.wikipedia.org/w/index.php?search=%artist-name%",
-	"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
+	"Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%artist-name%",
 	"Google": "http://www.google.com/search?q=%artist-name%",
 	"Google (images)": "http://images.google.com/images?q=%artist-name%",
 	"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
@@ -59,8 +59,8 @@ var favicons = {
 	"yahoo.": "http://blogs.yahoo.co.jp/favicon.ico",
 };
 var guessOtherFavicons = true;
+var hideAffiliates = true;
 /*------------end of settings (don't edit below) */
-var hideAffiliates = false;
 
 var sidebar = document.getElementById("sidebar");
 var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
