@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2012-01-19_2218
+// @version        2012-01-19_2228
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -31,7 +31,7 @@ var artist_autolinks = {
 	"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
 	"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
 	"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
-	"Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%artist-name%",
+	"Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
 	"Google": "http://www.google.com/search?q=%artist-name%",
 	"Google (images)": "http://images.google.com/images?q=%artist-name%",
 	"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
