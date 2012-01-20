@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2012-01-19_2228
+// @version        2012-01-20_1026
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -18,23 +18,30 @@
 var sortnameSearchFor = new RegExp("[\u0384-\u1CF2\u1F00-\uFFFF]");/*U+2FA1D is currently out of js range*/
 var autolinksOpacity = ".5"; /*can be dimmer than existing links*/
 var artist_autolinks = {
-	"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
-	"Lastfm (name)": "http://last.fm/music/%artist-name%",
-	"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
 	"LyricWiki": "http://lyrics.wikia.com/%artist-name%",
 	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
-	"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
-	"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
-	"\u6B4C\u8A5E\u30BF\u30A4\u30E0": {"charset":"EUC-JP", "action":"http://www.kasi-time.com/search.php", "parameters":{"cat_index":"uta","keyword":"%artist-name%"}},
-	"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
-	"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
-	"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
-	"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
-	"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
-	"Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
-	"Google": "http://www.google.com/search?q=%artist-name%",
-	"Google (images)": "http://images.google.com/images?q=%artist-name%",
-	"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
+	/*"Fun stuff": null, // you can insert headers this way (IMPORTANT: don't use space as first character)*/
+		"Pictures": "http://images.google.com/images?q=%artist-name%",
+		"Videos": "http://www.youtube.com/results?search_query=%artist-name%",
+	"Japanese stuff": null,
+		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": {"charset":"EUC-JP", "action":"http://www.kasi-time.com/search.php", "parameters":{"cat_index":"uta","keyword":"%artist-name%"}},
+		"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
+		"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
+		"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
+		"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
+		"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
+	"Asian stuff": null,
+		"nh\u1EA1c s\u1ED1 (vn)": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
+		"maniadb (kr)": "http://www.maniadb.com/search.asp?sr=PO&q=%artist-name%",
+	"Other stuff": null,
+		"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
+		"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
+		"Wikipedias": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
+		"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
+		"Lastfm (name)": "http://last.fm/music/%artist-name%",
+		"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
+		"Google": "http://www.google.com/search?q=%artist-name%",
+		"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
 };
 var favicons = {
 	"allmusic.com": "http://allmusic.com/img/favicon.ico",
@@ -109,7 +116,7 @@ function do108889() {
 									if (addExternalLink(url.getAttribute("type"), turl.textContent, begin, end)) {
 										if (!haslinks) {
 											haslinks = true;
-											addExternalLink("Hidden links");
+											addExternalLink(" Hidden links");
 										}
 									}
 								}
@@ -120,21 +127,23 @@ function do108889() {
 							for (link in artist_autolinks) {
 								var target = artist_autolinks[link];
 								var sntarget;
-								if (typeof target == "string") {
-									if (artistname != artistsortname && artistname.match(sortnameSearchFor)) {
-										sntarget = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistsortname));
+								if (target) {
+									if (typeof target == "string") {
+										if (artistname != artistsortname && artistname.match(sortnameSearchFor)) {
+											sntarget = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistsortname));
+										}
+										target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
 									}
-									target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
-								}
-								else {
-									for (param in target["parameters"]) {
-										target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
+									else {
+										for (param in target["parameters"]) {
+											target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
+										}
 									}
 								}
 								if (addExternalLink(link, target, null, null, sntarget)) {
 									if (!haslinks) {
 										haslinks = true;
-										addExternalLink("Generated links");
+										addExternalLink(" Generated links");
 									}
 								}
 							}
@@ -251,11 +260,16 @@ function addExternalLink(text, target, begin, end, sntarget) {
 	}
 	else {
 		var li = document.createElement("li");
-		li.style.fontWeight = "bold";
 		li.style.background = "transparent";
 		li.style.marginTop = ".5em";
 		li.appendChild(document.createTextNode(text));
-		extlinks.insertBefore(li, extlinks.lastChild);
+		if (text.indexOf(" ") == 0) {
+			li.style.fontWeight = "bold";
+			extlinks.insertBefore(li, extlinks.lastChild);
+		}
+		else {
+			extlinks.appendChild(li);
+		}
 	}
 	if (newLink) {
 		li.style.opacity = extlinksOpacity;
