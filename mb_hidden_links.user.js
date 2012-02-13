@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2012-02-13_1608
+// @version        2012-02-13_1644
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
@@ -26,20 +26,21 @@ var artist_autolinks = {
 		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": {"charset":"EUC-JP", "action":"http://www.kasi-time.com/search.php", "parameters":{"cat_index":"uta","keyword":"%artist-name%"}},
 		"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
 		"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
+		"\u97F3\u697D\u306E\u68EE": {"charset":"x-sjis", "action":"http://www.minc.gr.jp/minc-bin/art_lst1", "parameters":{"SRCHTYPE":"1","ARTISTNM":"%artist-name%"}},
 		"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
 		"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
 		"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
 		"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
 	"Vietnamese stuff": null,
-		"nh\u1EA1c s\u1ED1": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
 		"vi.Wikipedia": "http://vi.wikipedia.org/w/index.php?search=%artist-name%",
+		"nh\u1EA1c s\u1ED1": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
 	"Korean stuff": null,
 		"maniadb": "http://www.maniadb.com/search.asp?sr=PO&q=%artist-name%",
 	"Other stuff": null,
 		"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
 		"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
 		"en.Wikipedia": "http://en.wikipedia.org/w/index.php?search=%artist-name%",
-		"**.Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
+		"*.Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
 		"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
 		"Lastfm (name)": "http://last.fm/music/%artist-name%",
 		"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
@@ -187,15 +188,20 @@ function addExternalLink(text, target, begin, end, sntarget) {
 			var form = document.createElement("form");
 			form.setAttribute("accept-charset", target["charset"]);
 			form.setAttribute("action", target["action"]);
+			var info = target["action"], info1 = true;
 			for (param in target["parameters"]) {
+				if (info1) { info1 = false; info += "?"; }
+				else { info += "&"; }
+				info += param+"="+target["parameters"][param];
 				var input = document.createElement("input");
 				input.setAttribute("type", "hidden");
 				input.setAttribute("name", param);
 				input.setAttribute("value", target["parameters"][param]);
 				form.appendChild(input);
 			}
+			info += " ("+target["charset"]+")";
 			var a = createA(text);
-			a.setAttribute("title", target["charset"]+" "+target["action"]/*" post request (shift/ctrl click for tabbing enabled)"*/);
+			a.setAttribute("title", info);
 			a.addEventListener("mousedown", function (e) {
 				e.preventDefault();
 				if (e.button == 1) {
@@ -205,7 +211,7 @@ function addExternalLink(text, target, begin, end, sntarget) {
 			}, false);
 			a.addEventListener("click", function (e) {
 				if (e.button == 0) {
-					/*opera OK with ctrl/shit+click*/
+					/*lame browsers;)*/
 					if (typeof opera == "undefined") {
 						if (e.shiftKey) {
 							this.parentNode.setAttribute("target", "_blank");
@@ -295,7 +301,7 @@ function addExternalLink(text, target, begin, end, sntarget) {
 }
 function weirdobg() {
 	var weirdo = userjs+(new Date().getTime());
-	try { self.open("/", weirdo).blur(); } catch(e) {}
+	try { self.open("", weirdo).blur(); } catch(e) {}
 	self.focus();
 	return weirdo;
 }
