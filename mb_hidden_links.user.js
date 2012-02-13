@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2012-01-20_1026
+// @version        2012-02-13_1608
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
 // @namespace      http://userscripts.org/scripts/show/108889
-
 // @include        http://*musicbrainz.org/artist/*
 // @exclude        http://*musicbrainz.org/artist/*/edit
 // @exclude        http://*musicbrainz.org/artist/*/split
@@ -26,17 +25,21 @@ var artist_autolinks = {
 	"Japanese stuff": null,
 		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": {"charset":"EUC-JP", "action":"http://www.kasi-time.com/search.php", "parameters":{"cat_index":"uta","keyword":"%artist-name%"}},
 		"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
+		"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
 		"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
 		"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
 		"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
 		"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
-	"Asian stuff": null,
-		"nh\u1EA1c s\u1ED1 (vn)": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
-		"maniadb (kr)": "http://www.maniadb.com/search.asp?sr=PO&q=%artist-name%",
+	"Vietnamese stuff": null,
+		"nh\u1EA1c s\u1ED1": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
+		"vi.Wikipedia": "http://vi.wikipedia.org/w/index.php?search=%artist-name%",
+	"Korean stuff": null,
+		"maniadb": "http://www.maniadb.com/search.asp?sr=PO&q=%artist-name%",
 	"Other stuff": null,
 		"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
 		"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
-		"Wikipedias": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
+		"en.Wikipedia": "http://en.wikipedia.org/w/index.php?search=%artist-name%",
+		"**.Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
 		"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
 		"Lastfm (name)": "http://last.fm/music/%artist-name%",
 		"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
@@ -68,7 +71,7 @@ var favicons = {
 var guessOtherFavicons = true;
 var hideAffiliates = true;
 /*------------end of settings (don't edit below) */
-
+var userjs = "j2ujs108889";
 var sidebar = document.getElementById("sidebar");
 var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
 var existingLinks, extlinks;
@@ -166,7 +169,6 @@ function do108889() {
 		}
 	}
 }
-
 var favicontry = [];
 var extlinksOpacity = "1";
 function addExternalLink(text, target, begin, end, sntarget) {
@@ -193,12 +195,26 @@ function addExternalLink(text, target, begin, end, sntarget) {
 				form.appendChild(input);
 			}
 			var a = createA(text);
-			a.setAttribute("title", target["charset"]+" post request (shift/ctrl click for tabbing enabled)");
-			a.addEventListener("click", function (e) {
-				if (typeof opera == "undefined") {/*Opera already ok*/
-					this.parentNode.setAttribute("target", (e.shiftKey||e.ctrlKey)?"_blank":"_self");
+			a.setAttribute("title", target["charset"]+" "+target["action"]/*" post request (shift/ctrl click for tabbing enabled)"*/);
+			a.addEventListener("mousedown", function (e) {
+				e.preventDefault();
+				if (e.button == 1) {
+					this.parentNode.setAttribute("target", weirdobg());
+					this.parentNode.submit();
 				}
-				this.parentNode.submit();
+			}, false);
+			a.addEventListener("click", function (e) {
+				if (e.button == 0) {
+					/*opera OK with ctrl/shit+click*/
+					if (typeof opera == "undefined") {
+						if (e.shiftKey) {
+							this.parentNode.setAttribute("target", "_blank");
+						} else if (e.ctrlKey) {
+							this.parentNode.setAttribute("target", weirdobg());
+						}
+					}
+					this.parentNode.submit();
+				}
 			}, false);
 			form.appendChild(a);
 			form.appendChild(document.createTextNode(" ("));
@@ -277,7 +293,12 @@ function addExternalLink(text, target, begin, end, sntarget) {
 	}
 	return newLink;
 }
-
+function weirdobg() {
+	var weirdo = userjs+(new Date().getTime());
+	try { self.open("/", weirdo).blur(); } catch(e) {}
+	self.focus();
+	return weirdo;
+}
 function error(code, text) {
 	var ldng = document.getElementById("jesus2099loading108889");
 	if (ldng) {
@@ -304,7 +325,6 @@ function error(code, text) {
 		error(code, text);
 	}
 }
-
 function loading(on) {
 	var ldng = document.getElementById("jesus2099loading108889");
 	if (on) {
@@ -328,7 +348,6 @@ function loading(on) {
 		}
 	}
 }
-
 function createA(text, link, title) {
 	var a = document.createElement("a");
 	if (link) {
@@ -341,7 +360,6 @@ function createA(text, link, title) {
 	a.appendChild(document.createTextNode(text));
 	return a;
 }
-
 function nsr(prefix) {
 	switch (prefix) {
 		case "mb":
@@ -350,7 +368,5 @@ function nsr(prefix) {
 			return null;
 	}
 }
-
 do108889();
-
 })();
