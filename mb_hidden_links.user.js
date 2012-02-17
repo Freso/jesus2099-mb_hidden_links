@@ -1,17 +1,16 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
+// @version        2012-02-17_0902
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
-// @version        2012-02-13_1644
+// @namespace      http://userscripts.org/scripts/show/108889
 // @author         Tristan DANIEL (jesus2099)
 // @contact        http://miaou.ions.fr
 // @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
-// @namespace      http://userscripts.org/scripts/show/108889
 // @include        http://*musicbrainz.org/artist/*
 // @exclude        http://*musicbrainz.org/artist/*/edit
 // @exclude        http://*musicbrainz.org/artist/*/split
 // @include        http://*musicbrainz.org/release/*
 // ==/UserScript==
-
 (function () {
 /*------------settings*/
 var sortnameSearchFor = new RegExp("[\u0384-\u1CF2\u1F00-\uFFFF]");/*U+2FA1D is currently out of js range*/
@@ -76,7 +75,6 @@ var userjs = "j2ujs108889";
 var sidebar = document.getElementById("sidebar");
 var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
 var existingLinks, extlinks;
-
 function do108889() {
 	if (sidebar) {
 		var rgextrels = document.getElementsByClassName("external_links_2");
@@ -241,7 +239,7 @@ function addExternalLink(text, target, begin, end, sntarget) {
 				newLink = false;
 				li = lis[exi];
 			}
-			if (sntarget) {
+			if (sntarget && newLink) {
 				li.appendChild(document.createTextNode(" ("));
 				li.appendChild(createA("sn", sntarget, "search with sortname"));
 				li.appendChild(document.createTextNode(")"));
