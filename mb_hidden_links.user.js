@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
-// @version        2012-02-17_0902
+// @version        2012-05-06_1838
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
 // @namespace      http://userscripts.org/scripts/show/108889
 // @author         Tristan DANIEL (jesus2099)
@@ -70,6 +70,7 @@ var favicons = {
 };
 var guessOtherFavicons = true;
 var hideAffiliates = true;
+var hideDupeRelationshipsLink = true; /*"View all relationships" link = "Relationships" tab*/
 /*------------end of settings (don't edit below) */
 var userjs = "j2ujs108889";
 var sidebar = document.getElementById("sidebar");
@@ -338,12 +339,10 @@ function loading(on) {
 			li.style.background = "#ff6";
 			li.appendChild(document.createTextNode("loading\u2026"));
 			var lis = extlinks.getElementsByTagName("li");
-			if (lis.length == 1 && lis[0].lastChild.nodeValue.indexOf("has no URL relationships.") != -1) {
-				extlinks.replaceChild(li, lis[0]);
+			if (hideDupeRelationshipsLink && lis[lis.length-1].textContent.match(/View all relationships/)) {
+				extlinks.removeChild(lis[lis.length-1]);
 			}
-			else {
-				extlinks.appendChild(li);
-			}
+			extlinks.appendChild(li);
 		}
 	}
 	else {
