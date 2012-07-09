@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
-// @version        2012-05-06_1838
+// @version        2012-07-09_1209
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
 // @namespace      http://userscripts.org/scripts/show/108889
 // @author         Tristan DANIEL (jesus2099)
@@ -109,12 +109,10 @@ function do108889() {
 							while (url = urls.iterateNext()) {
 								var target = res.evaluate("./mb:target", url, nsr, XPathResult.ANY_TYPE, null);
 								var turl = target.iterateNext();
-								var begin = res.evaluate("./mb:begin", url, nsr, XPathResult.ANY_TYPE, null);
-								begin = begin.iterateNext();
-								if (begin) { begin = begin.textContent; } else { begin = ""; }
-								var end = res.evaluate("./mb:end", url, nsr, XPathResult.ANY_TYPE, null);
-								end = end.iterateNext();
-								if (end) { end = end.textContent; } else { end = ""; }
+								var begin, end;
+								if (begin = res.evaluate("./mb:begin", url, nsr, XPathResult.ANY_TYPE, null).iterateNext()) { begin = begin.textContent; }
+								if (end = res.evaluate("./mb:end", url, nsr, XPathResult.ANY_TYPE, null).iterateNext()) { end = end.textContent; }
+								else if (res.evaluate("./mb:ended", url, nsr, XPathResult.ANY_TYPE, null).iterateNext()) { end = "????"; }
 								if (turl) {
 									if (addExternalLink(url.getAttribute("type"), turl.textContent, begin, end)) {
 										if (!haslinks) {
@@ -251,7 +249,7 @@ function addExternalLink(text, target, begin, end, sntarget) {
 				if (begin != end) { dates += "\u2014"; }
 				if (end && begin != end) { dates += end; }
 				dates += ")";
-				li.appendChild(document.createTextNode(dates));
+				li.appendChild(document.createElement("span").appendChild(document.createTextNode(dates)).parentNode).style.whiteSpace = "nowrap";
 			}
 		}
 		var favurltest = (typeof target == "string")?target:target["action"];
