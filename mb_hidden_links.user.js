@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
-// @version        2012-07-09_1209
+// @version        2012-07-24_1855
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
 // @namespace      http://userscripts.org/scripts/show/108889
 // @author         Tristan DANIEL (jesus2099)
@@ -22,7 +22,7 @@ var artist_autolinks = {
 		"Pictures": "http://images.google.com/images?q=%artist-name%",
 		"Videos": "http://www.youtube.com/results?search_query=%artist-name%",
 	"Japanese stuff": null,
-		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": {"charset":"EUC-JP", "action":"http://www.kasi-time.com/search.php", "parameters":{"cat_index":"uta","keyword":"%artist-name%"}},
+		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": "http://google.com/search?q=site%3Akasi-time.com+inurl%3Akasi-time.com%2Fsubcat+intitle:%artist-name%",
 		"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
 		"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
 		"\u97F3\u697D\u306E\u68EE": {"charset":"x-sjis", "action":"http://www.minc.gr.jp/minc-bin/art_lst1", "parameters":{"SRCHTYPE":"1","ARTISTNM":"%artist-name%"}},
