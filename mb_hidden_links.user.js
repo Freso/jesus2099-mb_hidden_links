@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
-// @version        2012-07-24_1855
+// @version        2012.1105.1823
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
 // @namespace      http://userscripts.org/scripts/show/108889
-// @author         Tristan DANIEL (jesus2099)
-// @contact        http://miaou.ions.fr
-// @licence        GPL (http://www.gnu.org/copyleft/gpl.html)
-// @include        http://*musicbrainz.org/artist/*
-// @exclude        http://*musicbrainz.org/artist/*/edit
-// @exclude        http://*musicbrainz.org/artist/*/split
-// @include        http://*musicbrainz.org/release/*
+// @author         Tristan DANIEL (PATATE12 aka. jesus2099/shamo)
+// @licence        CC BY-NC-SA 3.0 FR (http://creativecommons.org/licenses/by-nc-sa/3.0/fr/)
+// @grant          none
+// @include        http*://*musicbrainz.org/artist/*
+// @exclude        http*://*musicbrainz.org/artist/*/edit
+// @exclude        http*://*musicbrainz.org/artist/*/split
+// @include        http*://*musicbrainz.org/release/*
+// @run-at         document-end
 // ==/UserScript==
 (function () {
 /*------------settings*/
@@ -22,6 +23,7 @@ var artist_autolinks = {
 		"Pictures": "http://images.google.com/images?q=%artist-name%",
 		"Videos": "http://www.youtube.com/results?search_query=%artist-name%",
 	"Japanese stuff": null,
+		"\u3046\u305f\u307e\u3063\u3077": {"charset":"euc-jp", "action":"http://www.utamap.com/searchkasi.php", "parameters":{"searchname":"artist","word":"%artist-name%"}},
 		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": "http://google.com/search?q=site%3Akasi-time.com+inurl%3Akasi-time.com%2Fsubcat+intitle:%artist-name%",
 		"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
 		"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
