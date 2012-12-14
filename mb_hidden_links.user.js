@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
-// @version        2012.1105.1823
+// @version        2012.1214.1928
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
 // @namespace      http://userscripts.org/scripts/show/108889
 // @author         Tristan DANIEL (PATATE12 aka. jesus2099/shamo)
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function () {
 /*------------settings*/
-var sortnameSearchFor = new RegExp("[\u0384-\u1CF2\u1F00-\uFFFF]");/*U+2FA1D is currently out of js range*/
+var sortnameSearchFor = /[\u0384-\u1CF2\u1F00-\uFFFF]/;/*U+2FA1D is currently out of js range*/
 var autolinksOpacity = ".5"; /*can be dimmer than existing links*/
 var artist_autolinks = {
 	"LyricWiki": "http://lyrics.wikia.com/%artist-name%",
