@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           MB. artist all links (+dates +favicons +search)
-// @version        2012.1214.1928
+// @version        2013.0205.1601
 // @description    Hidden links include fanpage, social network, etc. (NO duplicates) Generated links (configurable) includes Google, auto last.fm, Discogs and LyricWiki searches, etc. Dates on URLs
 // @namespace      http://userscripts.org/scripts/show/108889
 // @author         Tristan DANIEL (PATATE12 aka. jesus2099/shamo)
@@ -14,39 +14,52 @@
 // ==/UserScript==
 (function () {
 /*------------settings*/
-var sortnameSearchFor = /[\u0384-\u1CF2\u1F00-\uFFFF]/;/*U+2FA1D is currently out of js range*/
+var sortnameSearchFor = /[\u0384-\u1cf2\u1f00-\uffff]/;/*U+2FA1D is currently out of js range*/
 var autolinksOpacity = ".5"; /*can be dimmer than existing links*/
 var artist_autolinks = {
-	"LyricWiki": "http://lyrics.wikia.com/%artist-name%",
-	"Discogs search": "http://www.discogs.com/search?q=%artist-name%&type=artists",
+		"Google": "//www.google.com/search?q=%artist-name%",
+		"Google (strict)": "//www.google.com/search?q=%2B%22%artist-name%%22",
 	/*"Fun stuff": null, // you can insert headers this way (IMPORTANT: don't use space as first character)*/
-		"Pictures": "http://images.google.com/images?q=%artist-name%",
+		"Pictures": "//images.google.com/images?q=%artist-name%",
 		"Videos": "http://www.youtube.com/results?search_query=%artist-name%",
+	"Credits": null,
+		"SACEM (Interprète)": {"accept-charset":"ISO-8859-1", "action":"http://www.sacem.fr/oeuvres/oeuvre/rechercheOeuvre.do", "parameters":{"ftin":"true","q":"%artist-name%"}},
+		"SACEM (Auteur-Compositeur-Éditeur)": {"accept-charset":"ISO-8859-1", "action":"http://www.sacem.fr/oeuvres/oeuvre/rechercheOeuvre.do", "parameters":{"ftad":"true","q":"%artist-name%"}},
+		"JASRAC（アーティスト）": {"title":"requires JASRAC direct link", "method":"post", "accept-charset":"Shift_JIS", "enctype":"multipart/form-data", "action":"http://www2.jasrac.or.jp/eJwid/main.jsp?trxID=A00401-3", "parameters":{"IN_ARTIST_NAME_OPTION1":"0","IN_ARTIST_NAME1":"%artist-name%","IN_DEFAULT_WORKS_KOUHO_MAX":"100","IN_DEFAULT_WORKS_KOUHO_SEQ":"1","IN_DEFAULT_SEARCH_WORKS_NAIGAI":"0","RESULT_CURRENT_PAGE":"1"}},
+		"JASRAC（著作者）": {"title":"requires JASRAC direct link", "method":"post", "accept-charset":"Shift_JIS", "enctype":"multipart/form-data", "action":"http://www2.jasrac.or.jp/eJwid/main.jsp?trxID=A00401-3", "parameters":{"IN_KEN_NAME_OPTION1":"0","IN_KEN_NAME1":"%artist-name%","IN_KEN_NAME_JOB1":"0","IN_DEFAULT_WORKS_KOUHO_MAX":"100","IN_DEFAULT_WORKS_KOUHO_SEQ":"1","IN_DEFAULT_SEARCH_WORKS_NAIGAI":"0","RESULT_CURRENT_PAGE":"1"}},
+		"音楽の森（アーティスト）": {"accept-charset":"x-sjis", "action":"http://www.minc.gr.jp/minc-bin/art_lst1", "parameters":{"ARTISTNM":"%artist-name%"}},
+		"音楽の森（著作者）": {"accept-charset":"x-sjis", "action":"http://www.minc.gr.jp/minc-bin/ken_lst1", "parameters":{"KENRISYA":"%artist-name%"}},
+	"Lyrics": null,
+		"LyricWiki": "//lyrics.wikia.com/%artist-name%",
+		"うたまっぷ（アーティスト）": {"accept-charset":"euc-jp", "action":"http://www.utamap.com/searchkasi.php", "parameters":{"searchname":"artist","word":"%artist-name%"}},
+		"うたまっぷ（作詞者）": {"accept-charset":"euc-jp", "action":"http://www.utamap.com/searchkasi.php", "parameters":{"searchname":"sakusi","word":"%artist-name%"}},
+		"うたまっぷ（作曲者）": {"accept-charset":"euc-jp", "action":"http://www.utamap.com/searchkasi.php", "parameters":{"searchname":"sakyoku","word":"%artist-name%"}},
+		"J-Lyric（歌手）": "http://j-lyric.net/index.php?ka=%artist-name%",
+		"歌詞タイム": "//www.google.com/search?q=site%3Akasi-time.com+inurl%3Akasi-time.com%2Fsubcat+intitle:%artist-name%",
 	"Japanese stuff": null,
-		"\u3046\u305f\u307e\u3063\u3077": {"charset":"euc-jp", "action":"http://www.utamap.com/searchkasi.php", "parameters":{"searchname":"artist","word":"%artist-name%"}},
-		"\u6B4C\u8A5E\u30BF\u30A4\u30E0": "http://google.com/search?q=site%3Akasi-time.com+inurl%3Akasi-time.com%2Fsubcat+intitle:%artist-name%",
 		"VGMdb": "http://vgmdb.net/search?q=%artist-name%",
-		"ja.Wikipedia": "http://ja.wikipedia.org/w/index.php?search=%artist-name%",
-		"\u97F3\u697D\u306E\u68EE": {"charset":"x-sjis", "action":"http://www.minc.gr.jp/minc-bin/art_lst1", "parameters":{"SRCHTYPE":"1","ARTISTNM":"%artist-name%"}},
-		"CDJournal search": {"charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
-		"Joshinweb search": {"charset":"Shift_JIS", "action":"http://joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
-		"Yunisan": "http://google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
-		"VKDB": "http://google.com/search?q=site%3Avkdb.jp+%artist-name%",
+		"ja.Wikipedia": "//ja.wikipedia.org/w/index.php?search=%artist-name%",
+		"CDJournal search": {"accept-charset":"euc-jp", "action":"http://search.cdjournal.com/search/", "parameters":{"k":"%artist-name%"}},
+		"Joshinweb search": {"accept-charset":"Shift_JIS", "action":"//joshinweb.jp/cdshops/Dps", "parameters":{"KEY":"ARTIST","FM":"0","KEYWORD":"%artist-name%"}},
+		"Yunisan": "//www.google.com/search?q=inurl%3Ayunisan%2Fvi%2F+%artist-name%",
+		"VKDB": "//www.google.com/search?q=site%3Avkdb.jp+%artist-name%",
 	"Vietnamese stuff": null,
-		"vi.Wikipedia": "http://vi.wikipedia.org/w/index.php?search=%artist-name%",
-		"nh\u1EA1c s\u1ED1": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
+		"vi.Wikipedia": "//vi.wikipedia.org/w/index.php?search=%artist-name%",
+		"nhạc số": "http://nhacso.net/tim-nghe-si/trang-1/%artist-name%.html",
 	"Korean stuff": null,
 		"maniadb": "http://www.maniadb.com/search.asp?sr=PO&q=%artist-name%",
-	"Other stuff": null,
-		"AllMusic": "http://allmusic.com/search/artist/%artist-name%",
+	"Other databases": null,
+		"AllMusic": "http://www.allmusic.com/search/artist/%artist-name%",
+		"Discogs": "http://www.discogs.com/search?q=%artist-name%&type=artists",
+		"Rate Your Music": "http://rateyourmusic.com/search?searchtype=a&searchterm=%artist-name%", 
 		"Second hand songs": "http://www.secondhandsongs.com/cgi/topsearch.php?search_object=artist&search_text=%artist-name%",
-		"en.Wikipedia": "http://en.wikipedia.org/w/index.php?search=%artist-name%",
-		"*.Wikipedia": "http://www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
+		"WhoSampled": "http://www.whosampled.com/search/artists/?q=%artist-name%", 
+	"Other stuff": null,
+		"en.Wikipedia": "//en.wikipedia.org/w/index.php?search=%artist-name%",
+		"*.Wikipedia": "//www.google.com/search?q=site:wikipedia.org+%22%artist-name%%22",
 		"Lastfm (mbid)": "http://last.fm/mbid/%artist-id%",
 		"Lastfm (name)": "http://last.fm/music/%artist-name%",
 		"BBC Music": "http://www.bbc.co.uk/music/artists/%artist-id%",
-		"Google": "http://www.google.com/search?q=%artist-name%",
-		"Google (strict)": "http://www.google.com/search?q=%2B%22%artist-name%%22",
 };
 var favicons = {
 	"allmusic.com": "http://allmusic.com/img/favicon.ico",
@@ -80,21 +93,22 @@ var arelsws = "/ws/2/artist/%artist-id%?inc=url-rels";
 var existingLinks, extlinks;
 function do108889() {
 	if (sidebar) {
-		var rgextrels = document.getElementsByClassName("external_links_2");
-		if (rgextrels && rgextrels.length > 0 && rgextrels[0].getElementsByTagName("li").length > 0 && rgextrels[0].previousSibling.tagName == "UL") {
-			rgextrels[0].parentNode.insertBefore(document.createElement("h2"), rgextrels[0]).appendChild(document.createTextNode("Release group external links"));
+		var rgextrels = sidebar.querySelector("ul.external_links_2 > li");
+		if (rgextrels && (rgextrels = rgextrels.parentNode) && rgextrels.previousSibling.tagName == "UL") {
+			rgextrels.parentNode.insertBefore(document.createElement("h2"), rgextrels).appendChild(document.createTextNode("Release group external links"));
 		}
 		var artistid = self.location.href.match(/musicbrainz.org\/artist\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*/i);
-		if (artistid) {
+		var artistname = document.querySelector("div#content > div.artistheader > h1 a, div#content > div.artistheader > h1 span[href]"); /* for compatibilly with https://gist.github.com/jesus2099/4111760 */
+		var artistsortname = "";
+		if (artistid && artistname) {
 			artistid = artistid[1];
 			arelsws = arelsws.replace(/%artist-id%/, artistid);
-			var artistname = document.getElementsByClassName("artistheader")[0].getElementsByTagName("a")[0].firstChild.nodeValue.trim();
-			var tmpsn = document.getElementsByClassName("artistheader")[0].getElementsByTagName("a")[0].getAttribute("title").split(",");
-			var artistsortname = "";
+			var tmpsn = artistname.getAttribute("title").split(",");
 			for (var isn=tmpsn.length-1; isn>=0; isn--) {
 				artistsortname += tmpsn[isn].trim();
 				if (isn != 0) {artistsortname += " "; }
 			}
+			artistname = artistname.textContent.trim();
 			extlinks = sidebar.getElementsByClassName("external_links");
 			if (extlinks && extlinks.length>0) {
 				extlinks = extlinks[0];
@@ -138,9 +152,11 @@ function do108889() {
 										target = target.replace(/%artist-id%/, artistid).replace(/%artist-name%/, encodeURIComponent(artistname));
 									}
 									else {
-										for (param in target["parameters"]) {
-											target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, artistname)
-										}
+										var aname = target["accept-charset"];
+										aname = aname&&aname.match(/iso-8859/i)&&artistname!=artistsortname&&artistname.match(sortnameSearchFor)?artistsortname:artistname;
+										for (var param in target["parameters"]) { if (target["parameters"].hasOwnProperty(param)) {
+											target["parameters"][param] = target["parameters"][param].replace(/%artist-id%/, artistid).replace(/%artist-name%/, aname);
+										} }
 									}
 								}
 								if (addExternalLink(link, target, null, null, sntarget)) {
@@ -185,20 +201,26 @@ function addExternalLink(text, target, begin, end, sntarget) {
 		var li;
 		if (typeof target != "string") {
 			var form = document.createElement("form");
-			form.setAttribute("accept-charset", target["charset"]);
 			form.setAttribute("action", target["action"]);
-			var info = target["action"], info1 = true;
-			for (param in target["parameters"]) {
-				if (info1) { info1 = false; info += "?"; }
-				else { info += "&"; }
-				info += param+"="+target["parameters"][param];
-				var input = document.createElement("input");
-				input.setAttribute("type", "hidden");
-				input.setAttribute("name", param);
-				input.setAttribute("value", target["parameters"][param]);
-				form.appendChild(input);
+			if (target["title"]) {
+				form.style.setProperty("cursor", "help");
 			}
-			info += " ("+target["charset"]+")";
+			var info = "\n"+target["action"];
+			for (var attr in target) { if (target.hasOwnProperty(attr)) {
+				if (attr == "parameters") {
+					for (var param in target["parameters"]) { if (target["parameters"].hasOwnProperty(param)) {
+						info += "\n"+param+"="+target["parameters"][param];
+						var input = document.createElement("input");
+						input.setAttribute("type", "hidden");
+						input.setAttribute("name", param);
+						input.setAttribute("value", target["parameters"][param]);
+						form.appendChild(input);
+					} }
+				} else {
+					if (attr.match(/accept-charset|enctype|method/)) { info = target[attr]+" "+info; }
+					form.setAttribute(attr, target[attr]);
+				}
+			} }
 			var a = createA(text);
 			a.setAttribute("title", info);
 			a.addEventListener("mousedown", function (e) {
@@ -222,9 +244,7 @@ function addExternalLink(text, target, begin, end, sntarget) {
 				}
 			}, false);
 			form.appendChild(a);
-			form.appendChild(document.createTextNode(" ("));
-			form.appendChild(document.createElement("code")).appendChild(document.createTextNode(target["charset"]));
-			form.appendChild(document.createTextNode(")"));
+			form.appendChild(document.createTextNode("*"));
 			li = document.createElement("li");
 			li.appendChild(form);
 		}
@@ -248,7 +268,7 @@ function addExternalLink(text, target, begin, end, sntarget) {
 			if (begin || end) {
 				var dates = " (";
 				if (begin) { dates += begin; }
-				if (begin != end) { dates += "\u2014"; }
+				if (begin != end) { dates += "—"; }
 				if (end && begin != end) { dates += end; }
 				dates += ")";
 				li.appendChild(document.createElement("span").appendChild(document.createTextNode(dates)).parentNode).style.whiteSpace = "nowrap";
@@ -337,7 +357,7 @@ function loading(on) {
 			var li = document.createElement("li");
 			li.setAttribute("id", "jesus2099loading108889");
 			li.style.background = "#ff6";
-			li.appendChild(document.createTextNode("loading\u2026"));
+			li.appendChild(document.createTextNode("loading…"));
 			var lis = extlinks.getElementsByTagName("li");
 			if (hideDupeRelationshipsLink && lis[lis.length-1].textContent.match(/View all relationships/)) {
 				extlinks.removeChild(lis[lis.length-1]);
